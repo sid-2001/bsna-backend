@@ -23,11 +23,12 @@ class UserCreate(BaseModel):
     email: str
     password: str
     phone: str
-    notification_token: Optional[str] = ""
+    notification_token: Optional[str] = None
 
 class UserLogin(BaseModel):
     email: str
     password: str
+    notification_token: Optional[str] = ""
 
 class UserUpdate(BaseModel):
     first_name: Optional[str] = ""

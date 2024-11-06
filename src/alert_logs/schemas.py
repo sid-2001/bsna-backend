@@ -8,16 +8,16 @@ class AlertLogsBase(BaseModel):
     driver_name: str
     transaction_count: int 
     reason_of_abend: str
-    raised_at: datetime
-    fixed_at: datetime 
-    closed_by: Optional[uuid.UUID]
+    raised_at: Optional[datetime] = None
+    fixed_at: Optional[datetime] = None
+    closed_by: Optional[uuid.UUID] = None
     status: str 
-    attending_person: Optional[uuid.UUID]
+    attending_person: Optional[uuid.UUID] = None
     
 class AlertLogsCreate(BaseModel):
     driver_name: str
     transaction_count: int
-    reason_of_abend: str
+    reason_of_abend: Optional[str]
     raised_at: Optional[datetime]
     
 class AlertLogsUpdate(BaseModel):

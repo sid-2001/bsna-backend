@@ -81,6 +81,10 @@ class UserService:
         userFound = await self.get_user_by_email(user.email, session)
         if userFound is not None:
             if verify_hash(user.password, userFound.password_hash):
+                userFound.notification_token = user.notification_token
+                session.add(userFound)
+                await session.commit()
+                await session.refresh(userFound)
                 return userFound
             else:
                 return None

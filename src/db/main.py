@@ -21,7 +21,7 @@ async def init_db():
         )
 
 # define the database session object
-async def get_session() -> AsyncSession:
+async def get_session() -> AsyncSession: # type: ignore
     Session = sessionmaker(
         bind=engine,
         class_=AsyncSession,

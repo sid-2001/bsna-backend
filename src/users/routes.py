@@ -36,7 +36,8 @@ async def get_all_users(session:AsyncSession = Depends(get_session),
 
 @user_router.post("/new", status_code=status.HTTP_201_CREATED, response_model=User)
 async def create_user(user:UserCreate, session:AsyncSession = Depends(get_session),
-                      user_details = Depends(access_token_bearer)):
+                      user_details = Depends(access_token_bearer)
+                    ):
     if check_admin_user(user_details["user"]) is False:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

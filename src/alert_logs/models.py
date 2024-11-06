@@ -40,14 +40,14 @@ class AlertLogs(SQLModel, table=True):
     )
     raised_at: datetime = Field(
         sa_column=Column(
-            pg.TIMESTAMP(timezone=False),
+            pg.TIMESTAMP(timezone=True),
             nullable=False,
             default=datetime.now()
         )
     )
     fixed_at: datetime = Field(
         sa_column=Column(
-            pg.TIMESTAMP(timezone=False),
+            pg.TIMESTAMP(timezone=True),
             nullable=True
         )
     )

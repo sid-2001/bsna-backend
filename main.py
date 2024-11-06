@@ -6,6 +6,7 @@ from src.db.main import init_db
 from src.users.routes import user_router
 from src.auth.routes import auth_router
 from src.drivers.routes import driver_router
+from src.alert_logs.routes import alert_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -26,3 +27,4 @@ app = FastAPI(
 app.include_router(user_router,prefix="/api/v1/users",tags=["users"])
 app.include_router(auth_router, prefix="/api/v1/auth", tags=["auth"])
 app.include_router(driver_router, prefix="/api/v1/drivers", tags=["drivers"])
+app.include_router(alert_router, prefix="/api/v1/alerts", tags=['alerts'])
