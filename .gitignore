@@ -53,3 +53,4 @@ env/
 .env
 
 # db migrations
+migrations/

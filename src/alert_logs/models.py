@@ -33,7 +33,8 @@ class AlertLogs(SQLModel, table=True):
     reason_of_abend: str = Field(
         sa_column=Column(
             pg.TEXT,
-            nullable=True
+            nullable=True,
+            default="NA"
         ),
         min_length=1,
         max_length=250
@@ -50,10 +51,6 @@ class AlertLogs(SQLModel, table=True):
             pg.TIMESTAMP(timezone=True),
             nullable=True
         )
-    )
-    closed_by: Optional[uuid.UUID] = Field(
-        default=None,
-        foreign_key="users.id"
     )
     status: str = Field(
         sa_column=Column(

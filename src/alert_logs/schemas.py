@@ -6,19 +6,18 @@ import uuid
 class AlertLogsBase(BaseModel):
     uid: uuid.UUID
     driver_name: str
-    transaction_count: int 
-    reason_of_abend: str
-    raised_at: Optional[datetime] = None
+    transaction_count: int
+    reason_of_abend: Optional[str] = "NA"
+    raised_at: datetime
     fixed_at: Optional[datetime] = None
-    closed_by: Optional[uuid.UUID] = None
-    status: str 
+    status: str = "open"
     attending_person: Optional[uuid.UUID] = None
     
 class AlertLogsCreate(BaseModel):
     driver_name: str
     transaction_count: int
-    reason_of_abend: Optional[str]
-    raised_at: Optional[datetime]
+    reason_of_abend: Optional[str] = "NA"
+    raised_at: Optional[datetime] = datetime.now()
     
 class AlertLogsUpdate(BaseModel):
     driver_name: Optional[str]
