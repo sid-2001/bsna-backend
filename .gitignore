@@ -54,3 +54,7 @@ env/
 
 # db migrations
 migrations/
+
+# firebase config
+google-services.json
+service-account-key.json

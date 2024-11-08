@@ -6,6 +6,8 @@ class Settings(BaseSettings):
     JWT_ALGO: str
     HOST: str
     PORT: str
+    SERVICE_KEY_FILE: str
+    GOOGLE_SERVICES_FILE: str
     
     model_config = SettingsConfigDict(
         env_file=".env",
