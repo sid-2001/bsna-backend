@@ -4,6 +4,7 @@ from src.users.models import User
 from sqlmodel import select,insert,delete,update,asc
 from .utils import generate_hash,verify_hash,decode_token, create_access_token
 from fastapi.responses import JSONResponse
+from fastapi import status
 from datetime import datetime, timedelta
 
 class UserService:
@@ -81,10 +82,10 @@ class UserService:
         userFound = await self.get_user_by_email(user.email, session)
         if userFound is not None:
             if verify_hash(user.password, userFound.password_hash):
-                userFound.notification_token = user.notification_token
-                session.add(userFound)
-                await session.commit()
-                await session.refresh(userFound)
+                if user.notification_token is not None and user.notification_token != "" and len(user.notification_token) > 10:
+                    userFound.notification_token = user.notification_token
+                    session.add(userFound)
+                    await session.commit()
                 return userFound
             else:
                 return None
@@ -115,3 +116,35 @@ class UserService:
         
         else:
             return None
+        
+        
+    async def set_notification_token(self, session:AsyncSession, user_id:str, token:str) -> User | None:
+        try:
+            user_found = await self.get_user_id(user_id=user_id, session=session)
+            if user_found is None:
+                return JSONResponse(
+                    content={
+                        "message":"User not found"
+                    },
+                    status_code=status.HTTP_404_NOT_FOUND
+                )
+            if token is None or len(token) == 0:
+                return JSONResponse(
+                    content={
+                        "message":"Token not provided"
+                    },
+                    status_code=status.HTTP_400_BAD_REQUEST
+                )
+                
+            user_found.notification_token = token
+            session.add(user_found)
+            await session.commit()
+            return user_found
+        except Exception as e:
+            print(e)
+            return JSONResponse(
+                content={
+                    "message":"Error setting notification token"
+                },
+                status_code=status.HTTP_400_BAD_REQUEST
+            )
