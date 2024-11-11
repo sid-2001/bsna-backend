@@ -10,7 +10,7 @@ from .schemas import AlertLogsBase,AlertLogsCreate,AlertLogsUpdate
 from .models import AlertLogs
 from src.drivers.service import DriverService
 from src.users.service import UserService
-from src.drivers.schemas import DriverBase
+from src.drivers.schemas import DriverBase,DriverUpdate
 from src.firebase_config import FirebaseConfig
 
 driver_service = DriverService()
@@ -56,10 +56,26 @@ class AlertService :
                 body: str = "Demo Body BSNA"
                 print(f"tokens ::: {tokens} ::: type :::: {type(tokens)}")
                 FB_Conf.send_push_notifications(tokens,title,body)
+                updated_driver = DriverUpdate(
+                name="",
+                description="",
+                is_Active=True,
+                transaction_count=driver_data["transaction_count"],
+                updated_at=datetime.datetime.now()
+                )
+                await driver_service.update_driver_details(driver_uid=driver_found.uid,session=session,updated_driver=updated_driver)
                 return alert_found
             new_alert = AlertLogs(**driver_data)
             session.add(new_alert)
             await session.commit()
+            updated_driver = DriverUpdate(
+                name="",
+                description="",
+                is_Active=True,
+                transaction_count=driver_data["transaction_count"],
+                updated_at=datetime.datetime.now()
+            )
+            await driver_service.update_driver_details(driver_uid=driver_found.uid,session=session,updated_driver=updated_driver)
             # call firebase notification method
             
             return new_alert
