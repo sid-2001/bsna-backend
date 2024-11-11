@@ -5,6 +5,7 @@ from src.drivers.models import Driver
 from typing import List
 import uuid
 from fastapi import HTTPException
+import datetime
 
 class DriverService:
     
@@ -41,12 +42,18 @@ class DriverService:
             print(f"Exception in adding driver ::: {e}")
             return None
         
-    async def update_driver_details(self, session:AsyncSession, updated_driver:DriverUpdate) -> DriverBase | None:
-        driver_found = await self.get_driver_by_name(session=session, driver_name=updated_driver.name)
+    async def update_driver_details(self, driver_uid:str, session:AsyncSession, updated_driver:DriverUpdate) -> Driver | None:
+        driver_found = await self.get_driver_by_uid(session=session, driver_uid=driver_uid)
         if driver_found is not None:
-            driver_found_dict = updated_driver.model_dump()
-            for key, value in driver_found_dict.items():
-                setattr(driver_found, key, value)
+            if(updated_driver.name != "" and len(updated_driver.name) >= 4):
+                driver_found.name = updated_driver.name
+            if(updated_driver.description != "" and len(updated_driver.description) >= 1):
+                driver_found.description = updated_driver.description
+            if(updated_driver.transaction_count > 0 and updated_driver != driver_found.transaction_count):
+                driver_found.transaction_count = updated_driver.transaction_count
+            if(updated_driver.is_Active != None and updated_driver.is_Active != driver_found.is_Active):
+                driver_found.is_Active = updated_driver.is_Active
+            driver_found.updated_at = updated_driver.updated_at or datetime.datetime.now()
             session.add(driver_found)
             await session.commit()
             await session.refresh(driver_found)

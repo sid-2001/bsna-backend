@@ -148,3 +148,13 @@ class UserService:
                 },
                 status_code=status.HTTP_400_BAD_REQUEST
             )
+            
+    async def get_user_notification_tokens(self, session:AsyncSession):
+        statement = select(User.notification_token).where(User.notification_token != None, User.notification_token != "")
+        result = await session.exec(statement)
+        tokens = result.all()
+        if tokens is not None:
+            return tokens
+        else:
+            return None
+        

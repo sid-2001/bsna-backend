@@ -47,21 +47,21 @@ async def create_driver(driver:DriverCreate, session:AsyncSession = Depends(get_
         )
     return new_driver
 
-@driver_router.put("/", response_model=DriverBase, status_code=status.HTTP_200_OK)
-async def update_driver(driver:DriverUpdate, session:AsyncSession = Depends(get_session),
+@driver_router.put("/{driver_uid}", response_model=DriverBase, status_code=status.HTTP_200_OK)
+async def update_driver(driver_uid: str, driver:DriverUpdate, session:AsyncSession = Depends(get_session),
                         user_details:dict = Depends(access_token_bearer)):
     if check_admin_user(user_details["user"]) is False:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Unauthorized"
         )
-    updated_driver = await driver_service.update_driver_details(session=session,updated_driver=driver)
+    updated_driver = await driver_service.update_driver_details(driver_uid=driver_uid,session=session,updated_driver=driver)
     if updated_driver is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Driver not updated"
         )
-    return {"driver":updated_driver}
+    return updated_driver
 
 @driver_router.get("/refresh", response_model=List[DriverBase], status_code=status.HTTP_200_OK)
 async def refresh_transaction_count(session:AsyncSession = Depends(get_session),
