@@ -2,6 +2,7 @@ from typing import Optional,List
 from pydantic import BaseModel
 from datetime import datetime
 import uuid
+from src.users.schema import User
 
 class AlertLogsBase(BaseModel):
     uid: uuid.UUID
@@ -12,6 +13,9 @@ class AlertLogsBase(BaseModel):
     fixed_at: Optional[datetime] = None
     status: str = "open"
     attending_person: Optional[uuid.UUID] = None
+    
+class AlertLogsUser(AlertLogsBase):   
+    attendee: Optional[User] = None
     
 class AlertLogsCreate(BaseModel):
     driver_name: str

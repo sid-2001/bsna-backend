@@ -5,7 +5,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from src.db.main import get_session
 from src.auth.dependencies import AccessTokenBearer
 from src.users.utils import check_admin_user, check_auth_user
-from .schemas  import AlertLogsBase,AlertLogsCreate,AlertLogsUpdate
+from .schemas  import AlertLogsBase,AlertLogsCreate,AlertLogsUpdate,AlertLogsUser
 from .models import AlertLogs
 from.services import AlertService
 
@@ -31,7 +31,7 @@ async def raise_alert(alert_data:AlertLogsCreate,
         )
     return alert
 
-@alert_router.get("/", response_model=List[AlertLogsBase], status_code=status.HTTP_200_OK)
+@alert_router.get("/", response_model=List[AlertLogsUser], status_code=status.HTTP_200_OK)
 async def get_all_logs(session:AsyncSession = Depends(get_session),
                        user_details: dict = Depends(access_token)):
     if(check_admin_user(user_details["user"]) is False):

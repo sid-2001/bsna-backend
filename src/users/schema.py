@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional,List
 
 from pydantic import BaseModel, Field
 from datetime import datetime
@@ -15,6 +15,9 @@ class User(BaseModel):
     role: str = "user"
     notification_token: str
     is_active: bool = True
+    
+class UserAlerts(User):
+    alerts: Optional[List] = []
 
 class UserCreate(BaseModel):
     user_code: str

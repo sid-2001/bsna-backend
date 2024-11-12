@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     PORT: str
     SERVICE_KEY_FILE: str
     GOOGLE_SERVICES_FILE: str
+    FIREBASE_FCM_URL: str
     
     model_config = SettingsConfigDict(
         env_file=".env",

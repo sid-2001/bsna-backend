@@ -1,7 +1,9 @@
-from sqlmodel import SQLModel, Field, Column
+from sqlmodel import SQLModel, Field, Column, Relationship
 from datetime import datetime
 import uuid
 from sqlalchemy.dialects import postgresql as pg
+from typing import Optional, List
+from src.alert_logs.models import AlertLogs
 
 class User(SQLModel, table=True):
     __tablename__ = "users"
@@ -69,5 +71,7 @@ class User(SQLModel, table=True):
             default=True
         )
     )
+    
+    alerts: Optional[List["AlertLogs"]] = Relationship(back_populates="attendee",sa_relationship_kwargs={'lazy':'selectin'})
     
     

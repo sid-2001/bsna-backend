@@ -52,10 +52,13 @@ class AlertService :
                 tokens = ['fpDyPeywSQ6ZFok3lijECk:APA91bHq6pzt3Y9LjpWt8tUcRcn2vsYBZSoSzmzs2BqVYtdrjBJ1AEI82jv-PRUZ42Oro5FtO7KYyOQPwbGcBkvbvxw8c0leRv1ZDRf5taQ23vYUMhvupvk',
                         'c5kA8RFnQ0aZb_C-00K6Ls:APA91bEng4mMh0MU7uEY65w-P97yUJnwI5lYxe6zDiegcJz8g24AkYUA-e_gEjDy3Sbx751q_heaGbrv1Wx2tNWUt2g2Gpdfsdj158s8G6kaUyd5Cmvxj2E',
                         'flnRG7BTS5akRUU-UYMCXV:APA91bFb8KJAf_AMW6DzCSmrgzMnJVF_zFJsV6NTuuR8vEPFYN2s90T-5jBF6mhra9vWLr7nValKMqH1A6SJ3qIjrY2mr_C1W_c6pU2k3EZjuxv1pugcl4k']
-                title: str = "Demo Test BSNA"
-                body: str = "Demo Body BSNA"
-                print(f"tokens ::: {tokens} ::: type :::: {type(tokens)}")
-                FB_Conf.send_push_notifications(tokens,title,body)
+                title: str = f"{alert_found.driver_name} Failing since {alert_found.raised_at}"
+                body: str = f"Transaction Count has reached {alert_found.transaction_count}"
+                
+                # FB_Conf.send_push_notifications(tokens,title,body)
+                notification_status = await FB_Conf.send_notification_to_users(tokens=tokens,title=title,body=body)
+                print(f"Notification status ::: {notification_status}")
+                
                 updated_driver = DriverUpdate(
                 name="",
                 description="",

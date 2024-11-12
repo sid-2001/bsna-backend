@@ -3,7 +3,7 @@ from src.db.main import get_session
 from fastapi import APIRouter, Depends, status, Header
 from fastapi.exceptions import HTTPException
 from sqlmodel.ext.asyncio.session import AsyncSession
-from src.users.schema import User, UserCreate, UserLogin, UserUpdate
+from src.users.schema import User, UserCreate, UserLogin, UserUpdate, UserAlerts
 from typing import List
 from .utils import decode_token, create_access_token, check_admin_user
 from fastapi.responses import JSONResponse
@@ -67,7 +67,7 @@ async def update_user_by_id(user_id:str, user:UserUpdate, session:AsyncSession =
         )
     return updated_user
 
-@user_router.get("/id/{user_id}", status_code=status.HTTP_200_OK, response_model=User)
+@user_router.get("/id/{user_id}", status_code=status.HTTP_200_OK, response_model=UserAlerts)
 async def get_user_by_id(user_id:str, session:AsyncSession = Depends(get_session)):
     user = await user_service.get_user_id(user_id=user_id, session=session)
     if not user:
@@ -77,7 +77,7 @@ async def get_user_by_id(user_id:str, session:AsyncSession = Depends(get_session
         )
     return user
 
-@user_router.get("/code/{user_code}", status_code=status.HTTP_200_OK, response_model=User)
+@user_router.get("/code/{user_code}", status_code=status.HTTP_200_OK, response_model=UserAlerts)
 async def get_user_by_user_code(user_code:str, session:AsyncSession = Depends(get_session)):
     user = await user_service.get_user_by_code(user_code=user_code, session=session)
     if not user:

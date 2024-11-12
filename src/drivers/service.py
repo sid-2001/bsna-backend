@@ -53,7 +53,7 @@ class DriverService:
                 driver_found.transaction_count = updated_driver.transaction_count
             if(updated_driver.is_Active != None and updated_driver.is_Active != driver_found.is_Active):
                 driver_found.is_Active = updated_driver.is_Active
-            driver_found.updated_at = updated_driver.updated_at or datetime.datetime.now()
+            driver_found.updated_at = datetime.datetime.now()
             session.add(driver_found)
             await session.commit()
             await session.refresh(driver_found)
