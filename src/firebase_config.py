@@ -32,7 +32,7 @@ class FirebaseConfig():
                 raise Exception
             message = {
                 "message": {
-                    "topic": "alert",
+                    "topic": "Alerts",
                     "notification": {
                         "title": title,
                         "body": body
