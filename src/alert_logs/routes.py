@@ -47,7 +47,7 @@ async def get_all_logs(session:AsyncSession = Depends(get_session),
         )
     return alerts
 
-@alert_router.get("/open", response_model=List[AlertLogsBase], status_code=status.HTTP_200_OK)
+@alert_router.get("/open", response_model=List[AlertLogsUser], status_code=status.HTTP_200_OK)
 async def get_open_logs(session:AsyncSession = Depends(get_session),
                        user_details: dict = Depends(access_token)):
     if(check_auth_user(user_details["user"]) is False):
@@ -80,4 +80,22 @@ async def close_fixed_alert(alert_id: str,
             detail="Unable to close alert"
         )
     return closed_alert
+
+@alert_router.put("/attend/{alert_id}", response_model=AlertLogsUser, status_code=status.HTTP_202_ACCEPTED)
+async def attend_alert(alert_id: str,
+                       session:AsyncSession = Depends(get_session),
+                       user_details: dict = Depends(access_token)):
+    if(check_auth_user(user_details["user"]) is False):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Unauthorized"
+    )
+    alert = await alert_service.attend_to_alert(alert_id=alert_id, session=session, attending_person=user_details["user"]["user_id"])
+    if alert is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Alert not found"
+        )
+    return alert
+        
     

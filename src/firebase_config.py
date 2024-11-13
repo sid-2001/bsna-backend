@@ -24,7 +24,7 @@ class FirebaseConfig():
 
         return access_token
     
-    async def send_notification_to_users(self,tokens: List[str], title:str, body:str, data:dict = None):
+    async def send_notification_to_users(self, title:str, body:str, data:dict = None):
         try:
             access_token = self.get_access_token()
             print(f"Access Token ::: {access_token}")

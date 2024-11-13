@@ -1,5 +1,5 @@
 from sqlmodel.ext.asyncio.session import AsyncSession
-from sqlmodel import select,insert,delete,update,asc
+from sqlmodel import select,insert,delete,update,asc,or_
 from typing import List, Optional
 import uuid
 from fastapi.responses import JSONResponse
@@ -19,17 +19,17 @@ FB_Conf = FirebaseConfig()
 
 class AlertService :
     
-    async def send_alert_notification(self,title:str,body:str,session:AsyncSession):
-        tokens_sequence = await user_service.get_user_notification_tokens(session=session)
-        if tokens_sequence is None or tokens_sequence.count <= 0:
-            return JSONResponse(
-                content={
-                    "message":"No tokens found!!"
-                },
-                status_code=status.HTTP_404_NOT_FOUND
-            )
-        FB_Conf.send_push_notifications(tokens_sequence)
-        pass
+    # old notification  method not to be used as Pub-Sub is followed
+    # async def send_alert_notification(self,title:str,body:str,session:AsyncSession):
+    #     tokens_sequence = await user_service.get_user_notification_tokens(session=session)
+    #     if tokens_sequence is None or tokens_sequence.count <= 0:
+    #         return JSONResponse(
+    #             content={
+    #                 "message":"No tokens found!!"
+    #             },
+    #             status_code=status.HTTP_404_NOT_FOUND
+    #         )
+    #     FB_Conf.send_push_notifications(tokens_sequence)
         
     async def raise_alert(self, session:AsyncSession, alert_data:AlertLogsCreate) -> AlertLogs | None :
         try:
@@ -49,14 +49,14 @@ class AlertService :
                 session.add(alert_found)
                 await session.commit()
                 # call firebase notification method
-                tokens = ['fpDyPeywSQ6ZFok3lijECk:APA91bHq6pzt3Y9LjpWt8tUcRcn2vsYBZSoSzmzs2BqVYtdrjBJ1AEI82jv-PRUZ42Oro5FtO7KYyOQPwbGcBkvbvxw8c0leRv1ZDRf5taQ23vYUMhvupvk',
-                        'c5kA8RFnQ0aZb_C-00K6Ls:APA91bEng4mMh0MU7uEY65w-P97yUJnwI5lYxe6zDiegcJz8g24AkYUA-e_gEjDy3Sbx751q_heaGbrv1Wx2tNWUt2g2Gpdfsdj158s8G6kaUyd5Cmvxj2E',
-                        'flnRG7BTS5akRUU-UYMCXV:APA91bFb8KJAf_AMW6DzCSmrgzMnJVF_zFJsV6NTuuR8vEPFYN2s90T-5jBF6mhra9vWLr7nValKMqH1A6SJ3qIjrY2mr_C1W_c6pU2k3EZjuxv1pugcl4k']
-                title: str = f"{alert_found.driver_name} Failing since {alert_found.raised_at}"
+                formatted_date = alert_found.raised_at.strftime("%Y-%m-%d %H:%M")
+                title: str = f"{alert_found.driver_name} Failing since {formatted_date}"
                 body: str = f"Transaction Count has reached {alert_found.transaction_count}"
+                if alert_found.attending_person is not None and alert_found.attending_person != "":
+                    body += f"\nAttending Person: {alert_found.attendee.first_name}"
                 
                 # FB_Conf.send_push_notifications(tokens,title,body)
-                notification_status = await FB_Conf.send_notification_to_users(tokens=tokens,title=title,body=body)
+                notification_status = await FB_Conf.send_notification_to_users(title=title,body=body)
                 print(f"Notification status ::: {notification_status}")
                 
                 updated_driver = DriverUpdate(
@@ -71,6 +71,17 @@ class AlertService :
             new_alert = AlertLogs(**driver_data)
             session.add(new_alert)
             await session.commit()
+            
+            formatted_date = new_alert.raised_at.strftime("%Y-%m-%d %H:%M")
+            title: str = f"{new_alert.driver_name} Failing since {formatted_date}"
+            body: str = f"Transaction Count has reached {new_alert.transaction_count}"
+            if new_alert.attending_person is not None and new_alert.attending_person != "":
+                body += f"\nAttending Person: {new_alert.attendee.first_name}"
+                
+            # FB_Conf.send_push_notifications(tokens,title,body)
+            notification_status = await FB_Conf.send_notification_to_users(title=title,body=body)
+            print(f"Notification status ::: {notification_status}")
+            
             updated_driver = DriverUpdate(
                 name="",
                 description="",
@@ -100,7 +111,7 @@ class AlertService :
         
     async def get_open_alerts(self, session:AsyncSession) -> List[AlertLogs] | None :
         try:
-            statement = select(AlertLogs).where(AlertLogs.status == "open").order_by(asc(AlertLogs.raised_at))
+            statement = select(AlertLogs).where(or_( AlertLogs.status == "open" , AlertLogs.status == "attending")).order_by(asc(AlertLogs.raised_at))
             result = await session.exec(statement)
             alerts = result.all()
             return alerts
@@ -125,3 +136,25 @@ class AlertService :
         except Exception as e:
             print(f"Exception in closing alert ::: {e}")
             return None
+        
+    async def attend_to_alert(self, alert_id: str, session:AsyncSession, attending_person:str) -> AlertLogs | None :
+        try:
+            statement = select(AlertLogs).where(AlertLogs.uid == alert_id)
+            result = await session.exec(statement)
+            alert_found = result.first()
+            if alert_found is not None :
+                alert_found.attending_person = attending_person
+                alert_found.status = "attending"
+                session.add(alert_found)
+                await session.commit()
+                return alert_found
+            else:
+                return None
+        except Exception as e:
+            print(f"Exception in attending to alert ::: {e}")
+            return JSONResponse(
+                content={
+                    "message":e.__cause__
+                },
+                status_code=status.HTTP_400_BAD_REQUEST
+            )
