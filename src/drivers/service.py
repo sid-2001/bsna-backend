@@ -1,5 +1,5 @@
 from sqlmodel.ext.asyncio.session import AsyncSession
-from sqlmodel import select,insert,delete,update,asc
+from sqlmodel import select,insert,delete,update,asc,desc
 from .schemas import DriverCreate,DriverBase,DriverUpdate,DriverUpdateCount
 from src.drivers.models import Driver
 from typing import List
@@ -10,7 +10,7 @@ import datetime
 class DriverService:
     
     async def get_all_drivers(self,session:AsyncSession) -> List[DriverBase] | None:
-        statement = select(Driver).order_by(asc(Driver.name))
+        statement = select(Driver).where(Driver.is_Active == True).order_by(desc(Driver.name))
         result = await session.exec(statement=statement)
         drivers = result.all()
         return drivers
@@ -44,7 +44,7 @@ class DriverService:
         
     async def update_driver_details(self, driver_uid:str, session:AsyncSession, updated_driver:DriverUpdate) -> Driver | None:
         driver_found = await self.get_driver_by_uid(session=session, driver_uid=driver_uid)
-        if driver_found is not None:
+        if driver_found is not None and driver_found.is_Active:
             if(updated_driver.name != "" and len(updated_driver.name) >= 4):
                 driver_found.name = updated_driver.name
             if(updated_driver.description != "" and len(updated_driver.description) >= 1):
@@ -64,7 +64,7 @@ class DriverService:
         try:
             for driver_to_update in drivers_to_update:
                 driver_found = await self.get_driver_by_uid(session=session, driver_uid=driver_to_update.uid)
-                if driver_found is not None:
+                if driver_found is not None and driver_found.is_Active :
                     driver_found.transaction_count = driver_to_update.transaction_count
                     session.add(driver_found)
                     await session.commit()
@@ -74,4 +74,17 @@ class DriverService:
             return drivers
         except Exception as e:
             print(f"Exception in updating transaction count ::: {e}")
+            return None
+        
+    async def remove_driver_by_uid(self,driver_uid:str, session:AsyncSession) -> Driver | None:
+        try:
+            driver_found = await self.get_driver_by_uid(session=session, driver_uid=driver_uid)
+            if driver_found is not None:
+                driver_found.is_Active = False
+                session.add(driver_found)
+                await session.commit()
+                return driver_found
+            return None
+        except Exception as e:
+            print(f"Exception in removing driver ::: {e}")
             return None

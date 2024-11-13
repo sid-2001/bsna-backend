@@ -143,6 +143,13 @@ class AlertService :
             result = await session.exec(statement)
             alert_found = result.first()
             if alert_found is not None :
+                if alert_found.attending_person is not None and alert_found.attending_person != "":
+                    return JSONResponse(
+                        status_code=status.HTTP_200_OK,
+                        content={
+                            "message":"Alert already attended"
+                            }
+                    )
                 alert_found.attending_person = attending_person
                 alert_found.status = "attending"
                 session.add(alert_found)

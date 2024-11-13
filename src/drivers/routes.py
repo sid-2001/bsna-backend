@@ -80,3 +80,19 @@ async def refresh_transaction_count(session:AsyncSession = Depends(get_session),
         )
     return drivers
     
+@driver_router.put("/remove/{driver_uid}", status_code=status.HTTP_204_NO_CONTENT)
+async def remove_driver(driver_uid:str,
+                        session: AsyncSession = Depends(get_session),
+                        user_details:dict = Depends(access_token_bearer)):
+    if(check_admin_user(user_details["user"]) is False):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Action Forbidden"
+    )
+    deleted_driver = await driver_service.remove_driver_by_uid(driver_uid=driver_uid, session=session)
+    if deleted_driver is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Driver not deleted"
+        )
+    
