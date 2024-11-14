@@ -1,5 +1,5 @@
 from sqlmodel.ext.asyncio.session import AsyncSession
-from sqlmodel import select,insert,delete,update,asc,or_
+from sqlmodel import select,insert,delete,update,asc,or_,and_
 from typing import List, Optional
 import uuid
 from fastapi.responses import JSONResponse
@@ -40,7 +40,7 @@ class AlertService :
                     status_code=404,
                     detail="Driver not found"
                 )
-            statement = select(AlertLogs).where(AlertLogs.driver_name == driver_data["driver_name"] and AlertLogs.status == "open")
+            statement = select(AlertLogs).where(and_(AlertLogs.driver_name == driver_data["driver_name"], or_( AlertLogs.status == "open", AlertLogs.status == "attending") ))
             result = await session.exec(statement)
             alert_found = result.first()
             if alert_found is not None :
