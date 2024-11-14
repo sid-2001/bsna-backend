@@ -20,8 +20,8 @@ async def raise_alert(alert_data:AlertLogsCreate,
                       user_details: dict = Depends(access_token)):
     if(check_admin_user(user_details["user"]) is False):
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Unauthorized"
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Forbidden"
         )
     alert = await alert_service.raise_alert(session=session, alert_data=alert_data)
     if alert is None:
@@ -34,7 +34,7 @@ async def raise_alert(alert_data:AlertLogsCreate,
 @alert_router.get("/", response_model=List[AlertLogsUser], status_code=status.HTTP_200_OK)
 async def get_all_logs(session:AsyncSession = Depends(get_session),
                        user_details: dict = Depends(access_token)):
-    if(check_admin_user(user_details["user"]) is False):
+    if(check_auth_user(user_details["user"]) is False):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Unauthorized"

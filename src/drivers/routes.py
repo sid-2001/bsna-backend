@@ -36,8 +36,8 @@ async def create_driver(driver:DriverCreate, session:AsyncSession = Depends(get_
                         user_details = Depends(access_token_bearer)):
     if check_admin_user(user_details["user"]) is False:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Unauthorized"
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Forbidden"
         )
     new_driver = await driver_service.create_driver(driver=driver, session=session)
     if new_driver is None:
@@ -52,8 +52,8 @@ async def update_driver(driver_uid: str, driver:DriverUpdate, session:AsyncSessi
                         user_details:dict = Depends(access_token_bearer)):
     if check_admin_user(user_details["user"]) is False:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Unauthorized"
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Forbidden"
         )
     updated_driver = await driver_service.update_driver_details(driver_uid=driver_uid,session=session,updated_driver=driver)
     if updated_driver is None:

@@ -23,8 +23,8 @@ async def get_all_users(session:AsyncSession = Depends(get_session),
                         user_details = Depends(access_token_bearer)):
     if check_admin_user(user_details["user"]) is False:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Unauthorized"
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Forbidden to view"
         )
     users = await user_service.get_all_users(session=session)
     if users is None:
@@ -40,8 +40,8 @@ async def create_user(user:UserCreate, session:AsyncSession = Depends(get_sessio
                     ):
     if check_admin_user(user_details["user"]) is False:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Unauthorized"
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Forbidden"
         )
     new_user = await user_service.create_user(user=user, session=session)
     if not new_user:
@@ -56,7 +56,7 @@ async def update_user_by_id(user_id:str, user:UserUpdate, session:AsyncSession =
                       user_details = Depends(access_token_bearer)):
     if check_admin_user(user_details["user"]) is False:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            status_code=status.HTTP_403_FORBIDDEN,
             detail="Unauthorized"
         )
     updated_user = await user_service.update_user(user_id=user_id, user=user, session=session)
@@ -92,8 +92,8 @@ async def delete_user(user_id:str, session:AsyncSession = Depends(get_session),
                       user_details = Depends(access_token_bearer)):
     if check_admin_user(user_details["user"]) is False:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Unauthorized"
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Forbidden"
         )
     user = await user_service.delete_user(user_id=user_id, session=session)
     if not user:
