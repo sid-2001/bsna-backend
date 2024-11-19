@@ -4,6 +4,7 @@ import uuid
 from sqlalchemy.dialects import postgresql as pg
 from typing import Optional, List
 from src.alert_logs.models import AlertLogs
+from src.support_schedules import models
 
 class User(SQLModel, table=True):
     __tablename__ = "users"
@@ -73,5 +74,7 @@ class User(SQLModel, table=True):
     )
     
     alerts: Optional[List["AlertLogs"]] = Relationship(back_populates="attendee",sa_relationship_kwargs={'lazy':'selectin'})
-    
+    # schedules: Optional[List["models.SupportSchedule"]] = Relationship(
+    #     back_populates="users", link_model=models.UserScheduleLink
+    # )
     

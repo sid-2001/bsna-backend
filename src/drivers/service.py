@@ -1,5 +1,5 @@
 from sqlmodel.ext.asyncio.session import AsyncSession
-from sqlmodel import select,insert,delete,update,asc,desc
+from sqlmodel import select,insert,delete,update,asc,desc,and_
 from .schemas import DriverCreate,DriverBase,DriverUpdate,DriverUpdateCount
 from src.drivers.models import Driver
 from typing import List
@@ -15,8 +15,11 @@ class DriverService:
         drivers = result.all()
         return drivers
     
-    async def get_driver_by_name(self, session:AsyncSession, driver_name:str) -> DriverBase | None:
-        statement = select(Driver).where(Driver.name == driver_name)
+    async def get_driver_by_name(self, session:AsyncSession, driver_name:str, driver_desc:str = "") -> DriverBase | None:
+        if driver_desc == "":
+            statement = select(Driver).where(Driver.name == driver_name)
+        else:
+            statement = select(Driver).where(and_(Driver.name == driver_name, Driver.description == driver_desc))
         result = await session.exec(statement=statement)
         driver = result.first()
         if driver is None:
@@ -62,15 +65,24 @@ class DriverService:
     
     async def update_transaction_count(self, session:AsyncSession, drivers_to_update:List[DriverUpdateCount]) -> List[DriverBase] | None:
         try:
+            additional_drivers = {}
             for driver_to_update in drivers_to_update:
-                driver_found = await self.get_driver_by_uid(session=session, driver_uid=driver_to_update.uid)
-                if driver_found is not None and driver_found.is_Active :
-                    driver_found.transaction_count = driver_to_update.transaction_count
+                driver_found = await self.get_driver_by_name(session=session, driver_name=driver_to_update["driverName"], driver_desc=driver_to_update["driverDescription"])
+                if driver_found is not None :
+                    driver_found.transaction_count = driver_to_update["driverCount"]
                     session.add(driver_found)
                     await session.commit()
                 else:
-                    raise Exception("Driver not found")
+                    new_driver = DriverCreate(
+                        name=driver_to_update["driverName"],
+                        description=driver_to_update["driverDescription"],
+                        is_Active=True,
+                        transaction_count=driver_to_update["driverCount"]
+                    )
+                    await self.create_driver(session=session, driver=new_driver)
+                    additional_drivers[driver_to_update["driverName"]] = driver_to_update["driverCount"]
             drivers = await self.get_all_drivers(session=session)
+            print(f"additional_drivers ::: {additional_drivers}")
             return drivers
         except Exception as e:
             print(f"Exception in updating transaction count ::: {e}")

@@ -25,7 +25,7 @@ class DriverUpdate(BaseModel):
     updated_at: Optional[datetime] = datetime.now()
     
 class DriverUpdateCount(BaseModel):
-    name: str
-    transaction_count: int
-    description: Optional[str]
+    driverName: str
+    driverDescription: str
+    driverCount: int
     updated_at: datetime = datetime.now()

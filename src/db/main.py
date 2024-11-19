@@ -7,6 +7,7 @@ from sqlalchemy.orm import sessionmaker
 from src.users.models import User
 from src.drivers.models import Driver
 from src.alert_logs.models import AlertLogs
+from src.support_schedules.models import SupportSchedule,UserScheduleLink
 
 engine = AsyncEngine(
     create_engine(

@@ -10,7 +10,8 @@ class Driver(SQLModel,table=True):
             pg.UUID,
             nullable=False,
             default=uuid.uuid4,
-            index=True
+            index=True,
+            primary_key=True
         )
     )
     name: str = Field(
@@ -18,7 +19,7 @@ class Driver(SQLModel,table=True):
             pg.TEXT,
             nullable=False,
             index=True,
-            primary_key=True
+            unique=False
         )
     )
     transaction_count: int = Field(

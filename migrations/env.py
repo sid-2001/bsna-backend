@@ -9,6 +9,8 @@ from alembic import context
 
 from src.users.models import User
 from src.drivers.models import Driver
+from src.alert_logs.models import AlertLogs
+from src.support_schedules.models import SupportSchedule, UserScheduleLink
 from sqlmodel import SQLModel
 from src.config import Config
 
