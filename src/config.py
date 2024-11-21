@@ -9,6 +9,8 @@ class Settings(BaseSettings):
     SERVICE_KEY_FILE: str
     GOOGLE_SERVICES_FILE: str
     FIREBASE_FCM_URL: str
+    BOLSBSNA_URL:str
+    O_AUTH_URL:str
     
     model_config = SettingsConfigDict(
         env_file=".env",
