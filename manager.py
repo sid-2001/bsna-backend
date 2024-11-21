@@ -13,8 +13,8 @@ class WebSocketManager:
         # add client to list of connected clients
         self.connected_clients.append(websocket)
         # send welcome message to the client
-        message = {"client":client_ip,"message": f"Welcome {client_ip}"}
-        await websocket.send_json(message)
+        # message = {"client":client_ip,"message": f"Welcome {client_ip}"}
+        # await websocket.send_json(message)
 
 
     async def send_message(self, websocket: WebSocket, message: dict):
@@ -29,3 +29,7 @@ class WebSocketManager:
 
     async def disconnect(self, websocket):
         self.connected_clients.remove(websocket)
+
+
+
+managerObj = WebSocketManager()

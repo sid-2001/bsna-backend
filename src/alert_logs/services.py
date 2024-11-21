@@ -17,6 +17,7 @@ driver_service = DriverService()
 user_service = UserService()
 FB_Conf = FirebaseConfig()
 
+
 class AlertService :
     
     # old notification  method not to be used as Pub-Sub is followed
@@ -33,6 +34,9 @@ class AlertService :
         
     async def raise_alert(self, session:AsyncSession, alert_data:AlertLogsCreate) -> AlertLogs | None :
         try:
+
+
+            # manager.send_message()
             driver_data = alert_data.model_dump()
             driver_found = await driver_service.get_driver_by_name(session=session, driver_name=driver_data["driver_name"])
             if driver_found is None :

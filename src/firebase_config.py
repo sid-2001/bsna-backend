@@ -7,8 +7,8 @@ from typing import List, Optional
 import httpx
 from fastapi.exceptions import HTTPException
 from src.config import Config
-from manager import WebSocketManager
-manager = WebSocketManager()
+
+from manager import managerObj
 
 class FirebaseConfig():
     
@@ -29,15 +29,10 @@ class FirebaseConfig():
     async def send_notification_to_users(self, title:str, body:str, data:dict = None):
         try:
 
-            print(title)
-            print(body)
-            print(data)
 
-
-            for client in manager.connected_clients:
-                print("sending messages")
-                 
-                await manager.send_message(client, title)
+            for client in managerObj.connected_clients:
+                   
+                    await managerObj.send_message(client, title)
 
             # access_token = self.get_access_token()
             # print(f"Access Token ::: {access_token}")

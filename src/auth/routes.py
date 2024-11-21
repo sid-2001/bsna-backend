@@ -7,8 +7,8 @@ from src.auth.dependencies import RefreshTokenBearer
 from src.users.utils import create_access_token
 from fastapi.websockets import WebSocket, WebSocketDisconnect
 
-from manager import WebSocketManager
-manager = WebSocketManager()
+from manager import managerObj
+
 
 
 active_connections: set[WebSocket] = set()
@@ -52,20 +52,19 @@ async def send_periodic_messages():
 @auth_router.websocket("/ws/notifications")
 
 async def websocket_endpoint(websocket: WebSocket):
-    await manager.connect(websocket)
-    for client in manager.connected_clients:
-                await manager.send_message(client, "hello")
+    await managerObj.connect(websocket)
+    
 
     while True:
         try:
             message = await websocket.receive_json()
             
-            for client in manager.connected_clients:
-                await manager.send_message(client, message)
+            for client in managerObj.connected_clients:
+                await managerObj.send_message(client, message)
 
 
         except WebSocketDisconnect:
-            await manager.disconnect(websocket)
+            await managerObj.disconnect(websocket)
         
 
 
@@ -108,4 +107,3 @@ async def broadcast_message(message: str):
     for connection in active_connections:
         await connection.send_text(message)
 
-broadcast_message("sdfdsa")        

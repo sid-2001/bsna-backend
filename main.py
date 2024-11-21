@@ -9,6 +9,7 @@ from src.auth.routes import auth_router
 from src.drivers.routes import driver_router
 from src.alert_logs.routes import alert_router
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("Starting application...")
