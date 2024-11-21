@@ -10,12 +10,17 @@ from fastapi.responses import JSONResponse
 from datetime import datetime, timedelta
 from src.auth.dependencies import AccessTokenBearer
 
+from fastapi.websockets import WebSocket, WebSocketDisconnect
+
 user_router = APIRouter()
 
 # create service object
 user_service = UserService()
 
 access_token_bearer = AccessTokenBearer()
+active_connections: set[WebSocket] = set()
+
+
 
 # get all books
 @user_router.get("/all",status_code=status.HTTP_200_OK, response_model=List[User])
@@ -103,8 +108,14 @@ async def delete_user(user_id:str, session:AsyncSession = Depends(get_session),
         )
     return user
 
+
+
+
+
 @user_router.post("/login", status_code=status.HTTP_200_OK)
 async def login_user(user:UserLogin, session:AsyncSession = Depends(get_session)):
+
+
     userFound = await user_service.login_user(user=user, session=session)
     if userFound is None:
         raise HTTPException(
@@ -131,3 +142,7 @@ async def login_user(user:UserLogin, session:AsyncSession = Depends(get_session)
                     },
                     status_code=status.HTTP_200_OK
                 )
+
+
+
+
