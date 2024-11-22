@@ -34,36 +34,36 @@ class FirebaseConfig():
                    
                     await managerObj.send_message(client, title)
 
-            # access_token = self.get_access_token()
-            # print(f"Access Token ::: {access_token}")
-            # if access_token is None:
-            #     raise Exception
-            # message = {
-            #     "message": {
-            #         "topic": "Alerts",
-            #         "notification": {
-            #             "title": title,
-            #             "body": body
-            #         }
-            #     }
-            # }
-            # headers = {
-            # "Authorization": f"Bearer {access_token}",
-            # "Content-Type": "application/json"
-            # }
-            # url = Config.FIREBASE_FCM_URL
+            access_token = self.get_access_token()
+            print(f"Access Token ::: {access_token}")
+            if access_token is None:
+                raise Exception
+            message = {
+                "message": {
+                    "topic": "Alerts",
+                    "notification": {
+                        "title": title,
+                        "body": body
+                    }
+                }
+            }
+            headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json"
+            }
+            url = Config.FIREBASE_FCM_URL
             
-            # async with httpx.AsyncClient() as client:
-            #     response = await client.post(url, headers=headers, json=message)
+            async with httpx.AsyncClient() as client:
+                response = await client.post(url, headers=headers, json=message)
 
-            # # Check if the request was successful
-            # if response.status_code == 200:
-            #     return {"success": True, "message": "Notification sent successfully"}
-            # else:
-                # raise HTTPException(
-                #     status_code=response.status_code,
-                #     detail=f"Failed to send notification: {response.text}"
-                # )
+            # Check if the request was successful
+            if response.status_code == 200:
+                return {"success": True, "message": "Notification sent successfully"}
+            else:
+                raise HTTPException(
+                    status_code=response.status_code,
+                    detail=f"Failed to send notification: {response.text}"
+                )
             return {"success": True, "message": "Notification sent successfully"}
         except Exception as e:
             print(f"Error sending notification: {e}")
