@@ -10,6 +10,7 @@ from src.drivers.routes import driver_router
 from src.alert_logs.routes import alert_router
 from src.support_schedules.routes import schedule_router
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("Starting application...")

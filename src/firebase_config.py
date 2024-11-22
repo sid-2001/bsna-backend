@@ -8,6 +8,8 @@ import httpx
 from fastapi.exceptions import HTTPException
 from src.config import Config
 
+from manager import managerObj
+
 class FirebaseConfig():
     
     
@@ -26,6 +28,12 @@ class FirebaseConfig():
     
     async def send_notification_to_users(self, title:str, body:str, data:dict = None):
         try:
+
+
+            for client in managerObj.connected_clients:
+                   
+                    await managerObj.send_message(client, title)
+
             access_token = self.get_access_token()
             print(f"Access Token ::: {access_token}")
             if access_token is None:
@@ -56,6 +64,7 @@ class FirebaseConfig():
                     status_code=response.status_code,
                     detail=f"Failed to send notification: {response.text}"
                 )
+            return {"success": True, "message": "Notification sent successfully"}
         except Exception as e:
             print(f"Error sending notification: {e}")
             raise e
