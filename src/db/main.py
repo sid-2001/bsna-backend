@@ -1,28 +1,29 @@
-from sqlmodel import create_engine,text,SQLModel
+import logging
+from sqlmodel import create_engine, text, SQLModel
 from sqlalchemy.ext.asyncio import AsyncEngine
-from src.config import Config
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlalchemy.orm import sessionmaker
+from src.config import Config
 
-from src.users.models import User
-from src.drivers.models import Driver
-from src.alert_logs.models import AlertLogs
-from src.support_schedules.models import SupportSchedule,UserScheduleLink
+# Suppress SQLAlchemy logs
+logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
+logging.getLogger("sqlalchemy.pool").setLevel(logging.WARNING)
 
+# Initialize the database engine
 engine = AsyncEngine(
     create_engine(
-    url=Config.DB_URL,
-    echo=True
-))
+        url=Config.DB_URL,
+        echo=False  # Disable echo logging
+    )
+)
 
+# Initialize the database
 async def init_db():
     async with engine.begin() as conn:
-        await conn.run_sync(
-            SQLModel.metadata.create_all
-        )
+        await conn.run_sync(SQLModel.metadata.create_all)
 
-# define the database session object
-async def get_session() -> AsyncSession: # type: ignore
+# Define the database session object
+async def get_session() -> AsyncSession:  # type: ignore
     Session = sessionmaker(
         bind=engine,
         class_=AsyncSession,

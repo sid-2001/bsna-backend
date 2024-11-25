@@ -9,6 +9,7 @@ from src.auth.routes import auth_router
 from src.drivers.routes import driver_router
 from src.alert_logs.routes import alert_router
 from src.support_schedules.routes import schedule_router
+import uvicorn
 
 
 @asynccontextmanager
@@ -47,3 +48,6 @@ app.include_router(auth_router, prefix="/api/v1/auth", tags=["auth"])
 app.include_router(driver_router, prefix="/api/v1/drivers", tags=["drivers"])
 app.include_router(alert_router, prefix="/api/v1/alerts", tags=['alerts'])
 app.include_router(schedule_router, prefix="/api/v1/schedules", tags=['schedules'])
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000) 

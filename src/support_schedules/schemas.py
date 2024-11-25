@@ -5,6 +5,8 @@ import uuid
 
 from src.users.models import User
 
+
+
 class SupportScheduleBase(BaseModel):
     uid: uuid.UUID
     start_date: datetime

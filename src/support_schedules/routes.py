@@ -1,8 +1,9 @@
-from fastapi import APIRouter,status,HTTPException, Depends
+from datetime import datetime
+from fastapi import APIRouter, Query,status,HTTPException, Depends
 from fastapi.responses import JSONResponse
 from typing import List
 from sqlmodel.ext.asyncio.session import AsyncSession
-
+import pdb
 from .services import ScheduleService
 from .models import SupportSchedule
 from .schemas import SupportScheduleBase,SupportScheduleCreate,SupportScheduleUpdate,SupportScheduleUser
@@ -20,9 +21,11 @@ async def create_new_schedule(schedule_data:SupportScheduleCreate,
                               session:AsyncSession = Depends(get_session),
                               user_details:dict = Depends(access_token_bearer)):
     try:
+     
         if check_admin_user(user_details["user"]) is False:
             return HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
+
                 detail="Forbidden"
             )
         schedule = await schedule_service.create_new_schedule(session=session,schedule=schedule_data)
@@ -60,4 +63,26 @@ async def get_all_schedules(session:AsyncSession = Depends(get_session),
         return HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal Server Error"
+        )
+    
+@schedule_router.get("/user", response_model=List[dict], status_code=status.HTTP_200_OK)
+async def get_schedules_with_users(
+    start_date: datetime = Query(..., description="The start date of the range"),
+    end_date: datetime = Query(..., description="The end date of the range"),
+    session: AsyncSession = Depends(get_session)  # Assuming get_session provides the AsyncSession
+):   
+    try:
+        # Call the service method to fetch users in the date range
+        data = await schedule_service.get_users_in_date_range(session=session, start_date=start_date, end_date=end_date)
+        # session.expire(session)
+        return data
+    except HTTPException as e:
+      
+        raise e
+    except Exception as e:
+      
+        print(f"Unexpected error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An unexpected error occurred while fetching schedules and users."
         )

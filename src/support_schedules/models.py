@@ -34,6 +34,8 @@ class SupportSchedule(SQLModel, table=True):
     created_at: datetime = Field(
         sa_column=Column(TIMESTAMP(timezone=True), nullable=False, default=datetime.now)
     )
+     
+    # users: List["User"] = Relationship(back_populates="schedules", link_model="UserScheduleLink")
     
     # user_ids: Optional[List[str]] = Field(
     #     default=None,
