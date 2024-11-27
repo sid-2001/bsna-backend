@@ -13,6 +13,8 @@ class SupportScheduleBase(BaseModel):
     end_date: datetime
     environment: str
     created_at: datetime
+    shift:str
+
     
     class Config:
         json_encoders = {
@@ -30,6 +32,7 @@ class SupportScheduleCreate(BaseModel):
     end_date: datetime
     environment: str
     users: Optional[List[str]]
+    shift:str
     
     class Config:
         json_encoders = {

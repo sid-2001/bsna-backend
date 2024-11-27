@@ -4,6 +4,7 @@ from typing import List, TYPE_CHECKING,Optional
 import uuid
 from sqlalchemy.dialects.postgresql import UUID as pgUUID, ENUM, TIMESTAMP
 from src.users import models
+from sqlalchemy.dialects import postgresql as pg
 
 
 class UserScheduleLink(SQLModel, table=True):
@@ -19,10 +20,18 @@ class SupportSchedule(SQLModel, table=True):
         sa_column=Column(pgUUID, nullable=False, default=uuid.uuid4, primary_key=True, index=True)
     )
     start_date: datetime = Field(
-        sa_column=Column(TIMESTAMP(timezone=True), nullable=False)
+        sa_column=Column(TIMESTAMP(timezone=False), nullable=False)
     )
     end_date: datetime = Field(
-        sa_column=Column(TIMESTAMP(timezone=True), nullable=False)
+        sa_column=Column(TIMESTAMP(timezone=False), nullable=False)
+    )
+
+    shift: str = Field(
+        sa_column= Column(
+            pg.TEXT,
+            nullable=False,
+            unique=False
+        )
     )
     environment: str = Field(
         sa_column=Column(

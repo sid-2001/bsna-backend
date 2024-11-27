@@ -28,6 +28,8 @@ class ScheduleService:
                    select(SupportSchedule).join(UserScheduleLink,SupportSchedule.uid==UserScheduleLink.schedule_id).where(
                     and_(
                         UserScheduleLink.user_id == user_id,
+                        SupportSchedule.shift == schedule.shift,
+
                         or_(
                             and_(
                                 SupportSchedule.start_date <= schedule.start_date,
@@ -78,16 +80,13 @@ class ScheduleService:
 
 
 
-            return new_schedule
-        
- 
-
+            return new_schedule        
         except Exception as e:
             await session.rollback()
             print(f"Exception in adding schedule ::: {e}")
             raise e
         
-  
+     
   
   
     async def get_duplicate_schedule(self, session:AsyncSession, schedule:SupportScheduleCreate) -> SupportSchedule | None:
@@ -140,13 +139,14 @@ class ScheduleService:
 
 
     async def get_users_in_date_range(
-    self, session: AsyncSession, start_date: datetime, end_date: datetime
+    self, session: AsyncSession, start_date: datetime, end_date: datetime,shift:str
 ) -> List[dict]:
      try:
         # Fetch schedules overlapping with the date range
         schedule_stmt = select(SupportSchedule.uid).where(
             SupportSchedule.start_date <= end_date,
-            SupportSchedule.end_date >= start_date
+            SupportSchedule.end_date >= start_date,
+            SupportSchedule.shift==shift
         )
         schedule_result = await session.exec(schedule_stmt)
         schedule_ids = schedule_result.all()  # This will be a list of UUIDs
@@ -225,6 +225,7 @@ class ScheduleService:
                 "end_date": schedule.end_date,
                 "environment": schedule.environment,
                 "created_at": schedule.created_at,
+                "shift":schedule.shift,
                 "users": [
                     {
                         "id": user.id,
@@ -247,4 +248,172 @@ class ScheduleService:
      except Exception as e:
         print(f"Error in fetching schedules: {e}")
         raise HTTPException(status_code=500, detail="An unexpected error occurred.")
-       
+    
+
+
+
+    async def delete_user_from_schedule(self,
+    session: AsyncSession, schedule_id: int, user_id: int
+) -> JSONResponse:
+      try:
+        # Check if the schedule exists
+        existing_schedule = await session.get(SupportSchedule, schedule_id)
+        if not existing_schedule:
+            return JSONResponse(
+                content={"detail": "Schedule not found"},
+                status_code=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Check if the user is associated with the schedule
+        result = await session.execute(
+            select(UserScheduleLink)
+            .where(UserScheduleLink.schedule_id == schedule_id)
+            .where(UserScheduleLink.user_id == user_id)
+        )
+        user_link = result.scalars().first()
+        if not user_link:
+            return JSONResponse(
+                content={"detail": "User not associated with this schedule"},
+                status_code=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Delete the user link
+        await session.execute(
+            delete(UserScheduleLink)
+            .where(UserScheduleLink.schedule_id == schedule_id)
+            .where(UserScheduleLink.user_id == user_id)
+        )
+        await session.commit()
+
+        return JSONResponse(
+            content={"detail": f"User {user_id} removed from schedule {schedule_id}"},
+            status_code=status.HTTP_200_OK,
+        )
+      except Exception as e:
+        await session.rollback()
+        print(f"Exception in deleting user from schedule ::: {e}")
+        raise e
+
+
+    
+
+    async def delete_schedule(self, session: AsyncSession, schedule_id: int) -> JSONResponse:
+     try:
+     
+
+        # Retrieve the existing schedule by ID
+        existing_schedule = await session.get(SupportSchedule, schedule_id)
+        if not existing_schedule:
+            return JSONResponse(
+                content={"detail": "Schedule not found"},
+                status_code=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Delete user links associated with the schedule
+        await session.execute(
+            delete(UserScheduleLink).where(UserScheduleLink.schedule_id == schedule_id)
+        )
+
+        # Delete the schedule itself
+        await session.delete(existing_schedule)
+        await session.commit()
+
+        return JSONResponse(
+            content={"detail": "Schedule and associated user links deleted successfully"},
+            status_code=status.HTTP_200_OK,
+        )
+     except Exception as e:
+        await session.rollback()
+        print(f"Exception in deleting schedule ::: {e}")
+        raise e
+
+
+
+    async def update_schedule(
+    self,
+    session: AsyncSession,
+    schedule_id: int,
+    updated_schedule: SupportScheduleCreate
+) -> SupportSchedule | None:
+     try:
+        print("Updating schedule")
+
+        # Retrieve the existing schedule by ID
+        existing_schedule = await session.get(SupportSchedule, schedule_id)
+        if not existing_schedule:
+            return JSONResponse(
+                content={"detail": "Schedule not found"},
+                status_code=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Check for conflicting schedules for updated users and dates
+        conflicting_users = []
+        for user_id in updated_schedule.users or []:
+            conflicting_schedule = await session.exec(
+                select(SupportSchedule)
+                .join(UserScheduleLink, SupportSchedule.uid == UserScheduleLink.schedule_id)
+                .where(
+                    and_(
+                        UserScheduleLink.user_id == user_id,
+                        SupportSchedule.uid != schedule_id,  # Exclude the current schedule
+                        or_(
+                            and_(
+                                SupportSchedule.start_date <= updated_schedule.start_date,
+                                SupportSchedule.end_date >= updated_schedule.start_date,
+                            ),
+                            and_(
+                                SupportSchedule.start_date <= updated_schedule.end_date,
+                                SupportSchedule.end_date >= updated_schedule.end_date,
+                            ),
+                            and_(
+                                updated_schedule.start_date <= SupportSchedule.start_date,
+                                updated_schedule.end_date >= SupportSchedule.end_date,
+                            ),
+                        ),
+                    )
+                )
+            )
+            if conflicting_schedule.first():
+                conflicting_users.append(user_id)
+
+        if conflicting_users:
+            return JSONResponse(
+                content={
+                    "detail": "Schedule conflicts found for users",
+                    "conflicting_users": conflicting_users,
+                },
+                status_code=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Check if the updated schedule is a duplicate
+        # duplicate_schedule = await self.get_duplicate_schedule(session=session, schedule=updated_schedule)
+        # if duplicate_schedule:
+        #     return JSONResponse(
+        #         content=duplicate_schedule,
+        #         status_code=status.HTTP_200_OK,
+        #     )
+
+        # Update the existing schedule's fields
+        for key, value in updated_schedule.model_dump().items():
+            if(key !="users"): 
+             setattr(existing_schedule, key, value)
+         
+        await session.commit()
+        await session.refresh(existing_schedule)
+
+        # Update UserScheduleLinks
+        # await session.execute(
+        #     UserScheduleLink.__table__.delete().where(UserScheduleLink.schedule_id == schedule_id)
+        # )
+        user_schedule_links = [
+            UserScheduleLink(user_id=user_id, schedule_id=existing_schedule.uid)
+            for user_id in updated_schedule.users or []
+        ]
+        session.add_all(user_schedule_links)
+        await session.commit()
+
+        return existing_schedule
+     except Exception as e:
+        await session.rollback()
+        print(f"Exception in updating schedule ::: {e}")
+        raise e
