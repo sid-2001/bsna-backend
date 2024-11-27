@@ -27,10 +27,10 @@ class SupportSchedule(SQLModel, table=True):
     )
 
     shift: str = Field(
-        sa_column= Column(
-            pg.TEXT,
+        sa_column=Column(
+            ENUM("morning", "afternoon", "evening","night" , name="schedule_shift"),
             nullable=False,
-            unique=False
+            default="morning",
         )
     )
     environment: str = Field(
