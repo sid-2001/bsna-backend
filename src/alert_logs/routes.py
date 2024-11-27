@@ -28,12 +28,6 @@ async def raise_alert(alert_data:AlertLogsCreate,
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Forbidden"
         )
-
-
-   
-
-
-    
     alert = await alert_service.raise_alert(session=session, alert_data=alert_data)
     if alert is None:
         raise HTTPException(

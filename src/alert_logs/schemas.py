@@ -18,9 +18,10 @@ class AlertLogsUser(AlertLogsBase):
     attendee: Optional[User] = None
     
 class AlertLogsCreate(BaseModel):
-    driver_name: str
-    transaction_count: int
-    reason_of_abend: Optional[str] = "NA"
+    driverName: str
+    driverDescription: str
+    driverCount: int
+    abendCode: Optional[str] = "NA"
     raised_at: Optional[datetime] = datetime.now()
     
 class AlertLogsUpdate(BaseModel):

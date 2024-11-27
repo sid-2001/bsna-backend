@@ -38,18 +38,18 @@ class AlertService :
 
             # manager.send_message()
             driver_data = alert_data.model_dump()
-            driver_found = await driver_service.get_driver_by_name(session=session, driver_name=driver_data["driver_name"])
+            driver_found = await driver_service.get_driver_by_name(session=session, driver_name=driver_data["driverName"], driver_desc=driver_data['driverDescription'])
             if driver_found is None :
                 raise HTTPException(
                     status_code=404,
                     detail="Driver not found"
                 )
-            statement = select(AlertLogs).where(and_(AlertLogs.driver_name == driver_data["driver_name"], or_( AlertLogs.status == "open", AlertLogs.status == "attending") ))
+            statement = select(AlertLogs).where(and_(AlertLogs.driver_name == driver_data["driverName"], or_( AlertLogs.status == "open", AlertLogs.status == "attending") ))
             result = await session.exec(statement)
             alert_found = result.first()
             if alert_found is not None :
                 print(f"Alert exists :: {alert_found}")
-                alert_found.transaction_count = driver_data["transaction_count"]
+                alert_found.transaction_count = driver_data["driverCount"]
                 session.add(alert_found)
                 await session.commit()
                 # call firebase notification method
@@ -90,7 +90,7 @@ class AlertService :
                 name="",
                 description="",
                 is_Active=True,
-                transaction_count=driver_data["transaction_count"],
+                transaction_count=driver_data["driverCount"],
                 updated_at=datetime.datetime.now()
             )
             await driver_service.update_driver_details(driver_uid=driver_found.uid,session=session,updated_driver=updated_driver)
