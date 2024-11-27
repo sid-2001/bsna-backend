@@ -72,7 +72,10 @@ class AlertService :
                 )
                 await driver_service.update_driver_details(driver_uid=driver_found.uid,session=session,updated_driver=updated_driver)
                 return alert_found
-            new_alert = AlertLogs(**driver_data)
+            new_alert = AlertLogs()
+            new_alert.driver_name = driver_data["driverName"]
+            new_alert.transaction_count = driver_data["driverCount"]
+            new_alert.reason_of_abend = driver_data["abendCode"]
             session.add(new_alert)
             await session.commit()
             
