@@ -21,13 +21,14 @@ access_token = AccessTokenBearer()
 @alert_router.post("/", response_model=AlertLogsBase, status_code=status.HTTP_201_CREATED)
 async def raise_alert(alert_data:AlertLogsCreate,
                       session: AsyncSession = Depends(get_session),
-                      user_details: dict = Depends(access_token)):
+                      #user_details: dict = Depends(access_token)
+                      ):
     
-    if(check_admin_user(user_details["user"]) is False):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Forbidden"
-        )
+    # if(check_admin_user(user_details["user"]) is False):
+    #     raise HTTPException(
+    #         status_code=status.HTTP_403_FORBIDDEN,
+    #         detail="Forbidden"
+    #     )
     alert = await alert_service.raise_alert(session=session, alert_data=alert_data)
     if alert is None:
         raise HTTPException(
