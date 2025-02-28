@@ -34,6 +34,7 @@ async def raise_alert(alert_data:AlertLogsCreate,
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Alert not created"
+            
         )
     return alert
 

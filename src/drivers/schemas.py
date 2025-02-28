@@ -10,6 +10,7 @@ class DriverBase(BaseModel):
     description: Optional[str]
     is_Active: bool 
     updated_at: datetime
+    valid_users:List[uuid.UUID]=[]
     
 class DriverCreate(BaseModel):
     name: str
@@ -29,3 +30,7 @@ class DriverUpdateCount(BaseModel):
     driverDescription: str
     driverCount: int
     updated_at: datetime = datetime.now()
+
+
+class UserIDsRequest(BaseModel):
+    user_ids: List[str]

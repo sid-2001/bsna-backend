@@ -47,6 +47,11 @@ class AlertService :
             statement = select(AlertLogs).where(and_(AlertLogs.driver_name == driver_data["driverName"], or_( AlertLogs.status == "open", AlertLogs.status == "attending") ))
             result = await session.exec(statement)
             alert_found = result.first()
+            token_list=[]
+
+            for user in driver_found.valid_users:
+              found_user=await user_service.get_user_id(user,session=session)
+              token_list.append(  found_user.notification_token)
             if alert_found is not None :
                 print(f"Alert exists :: {alert_found}")
                 alert_found.transaction_count = driver_data["driverCount"]
@@ -60,14 +65,16 @@ class AlertService :
                     body += f"\nAttending Person: {alert_found.attendee.first_name}"
                 
                 # FB_Conf.send_push_notifications(tokens,title,body)
-                notification_status = await FB_Conf.send_notification_to_users(title=title,body=body)
+
+            
+                notification_status = await FB_Conf.send_notification_to_users(title=title,body=body,token_list=token_list)
                 print(f"Notification status ::: {notification_status}")
                 
                 updated_driver = DriverUpdate(
                 name="",
                 description="",
                 is_Active=True,
-                transaction_count=driver_data["transaction_count"],
+                transaction_count= driver_data["driverCount"],
                 updated_at=datetime.datetime.now()
                 )
                 await driver_service.update_driver_details(driver_uid=driver_found.uid,session=session,updated_driver=updated_driver)
@@ -75,6 +82,8 @@ class AlertService :
             new_alert = AlertLogs()
             new_alert.driver_name = driver_data["driverName"]
             new_alert.transaction_count = driver_data["driverCount"]
+
+            
             new_alert.reason_of_abend = driver_data["abendCode"]
             session.add(new_alert)
             await session.commit()
