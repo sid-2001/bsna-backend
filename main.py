@@ -31,12 +31,13 @@ app = FastAPI(
 origins = [
     "http://localhost:5173",
     "https://bsna-web-admin.onrender.com"
+    "https://9b8c-2405-201-6805-b1c4-8db5-8ba5-caef-d29.ngrok-free.app"
 ]
 
 # Add CORS middleware to the app
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+   allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"]

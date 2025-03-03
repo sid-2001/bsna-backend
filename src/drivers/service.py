@@ -1,5 +1,6 @@
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlmodel import select,insert,delete,update,asc,desc,and_
+from src.users.schema import User
 from .schemas import DriverCreate,DriverBase,DriverUpdate,DriverUpdateCount
 from src.drivers.models import Driver
 from typing import List
@@ -7,17 +8,107 @@ import uuid
 from fastapi import HTTPException
 import datetime
 import httpx
-
+from sqlalchemy.sql import text
 from src.config import Config
 
 class DriverService:
     
-    async def get_all_drivers(self,session:AsyncSession) -> List[DriverBase] | None:
-        statement = select(Driver).where(Driver.is_Active == True).order_by(desc(Driver.name))
-        result = await session.exec(statement=statement)
-        drivers = result.all()
-        return drivers
+    # async def get_all_drivers(self,session:AsyncSession) -> List[DriverBase] | None:
+    #     statement = select(Driver).where(Driver.is_Active == True).order_by(desc(Driver.name))
+    #     print("i am here in this")
+    #     print(statement)
+    #     result = await session.exec(statement=statement)
+    #     drivers = result.all()
+    #     print(drivers)
+    #     return drivers
     
+  
+
+    from sqlalchemy.sql import text
+
+    from sqlalchemy.future import select
+    from typing import List, Optional
+
+    async def get_all_drivers(self, session: AsyncSession) -> Optional[List[DriverBase]]:
+        statement = select(Driver).where(Driver.is_Active == True).order_by(desc(Driver.name))
+        result = await session.execute(statement)
+        drivers = result.scalars().all()  # Fetch ORM objects
+        
+        if not drivers:
+            return None
+
+        # Convert ORM models to Pydantic models using `model_dump()` (Pydantic v2) or `.dict()` (Pydantic v1)
+        return [DriverBase(**{**driver.__dict__, "valid_users": driver.valid_users or []}) for driver in drivers]
+
+
+
+    async def add_users_to_driver(self, driver_id: str, user_ids: list, session: AsyncSession):
+     try:
+        query = text("""
+            UPDATE drivers 
+            SET valid_users = array_cat(valid_users, ARRAY(
+                SELECT unnest(CAST(:user_ids AS uuid[])) 
+                EXCEPT 
+                SELECT unnest(valid_users)
+            )) 
+            WHERE uid = :driver_id
+        """)
+        await session.execute(query, {"user_ids": user_ids, "driver_id": driver_id})
+        await session.commit()
+        return True
+     except Exception as e:
+        print(f"Error: {e}")
+        await session.rollback()
+        return None  
+   
+    # async def remove_users_from_driver(self, driver_id: str, user_ids: list, session: AsyncSession):
+    #     try:
+         
+    #         driver = await session.get(Driver, driver_id)
+    #         if not driver:
+    #             return None
+
+    #         users = await session.execute(select(User).filter(User.uid.in_(user_ids)))  # ✅ Fixed
+    #         users = users.scalars().all()
+    #         print(users)
+
+    #         if not users:
+    #             return None
+
+    #         for user in users:
+    #             if user in driver.users:
+    #                 driver.users.remove(user)
+
+    #         await session.commit()
+    #         return users
+
+    #     except Exception as e:
+    #         await session.rollback()
+    #         print(f"Error removing users from driver: {e}")
+    #         return None
+
+
+    async def remove_users_from_driver(self, driver_id: str, user_ids: list, session: AsyncSession):
+        try:
+            query = text("""
+                UPDATE drivers 
+                SET valid_users = ARRAY(
+                    SELECT unnest(valid_users)
+                    EXCEPT 
+                    SELECT unnest(CAST(:user_ids AS uuid[]))
+                )
+                WHERE uid = :driver_id
+            """)
+            await session.execute(query, {"user_ids": user_ids, "driver_id": driver_id})
+            await session.commit()
+            return True
+        except Exception as e:
+            print(f"Error removing users from driver: {e}")
+            await session.rollback()
+            return None  
+    
+
+
     async def get_driver_by_name(self, session:AsyncSession, driver_name:str, driver_desc:str = "") -> DriverBase | None:
         if driver_desc == "":
             statement = select(Driver).where(Driver.name == driver_name)

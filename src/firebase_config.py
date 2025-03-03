@@ -26,49 +26,59 @@ class FirebaseConfig():
 
         return access_token
     
-    async def send_notification_to_users(self, title:str, body:str, data:dict = None):
-        try:
+    async def send_notification_to_users(self, title: str, body: str, token_list: list = None, data: dict = None):
+     try:
+        # Send message to all connected clients
+        for client in managerObj.connected_clients:
+            await managerObj.send_message(client, title)
+        print(token_list)
+        sent_list=[]
 
+        access_token = self.get_access_token()
+      
+        
+        if access_token is None:
+            raise Exception("Failed to retrieve access token")
 
-            for client in managerObj.connected_clients:
-                   
-                    await managerObj.send_message(client, title)
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json"
+        }
+        url = Config.FIREBASE_FCM_URL
+        print(data)
 
-            access_token = self.get_access_token()
-            print(f"Access Token ::: {access_token}")
-            if access_token is None:
-                raise Exception
+        # Loop through token_list and send notification to each token
+        for token in token_list or []:
+         
             message = {
                 "message": {
-                    "topic": "Alerts",
+                    "token": token,  # Assuming token_list contains FCM tokens
                     "notification": {
                         "title": title,
                         "body": body
-                    }
+                    },
+                    "data": data or {}  # Attach extra data if provided
                 }
             }
-            headers = {
-            "Authorization": f"Bearer {access_token}",
-            "Content-Type": "application/json"
-            }
-            url = Config.FIREBASE_FCM_URL
             
             async with httpx.AsyncClient() as client:
                 response = await client.post(url, headers=headers, json=message)
+                print(response)
 
-            # Check if the request was successful
-            if response.status_code == 200:
-                return {"success": True, "message": "Notification sent successfully"}
-            else:
-                raise HTTPException(
-                    status_code=response.status_code,
-                    detail=f"Failed to send notification: {response.text}"
-                )
-            return {"success": True, "message": "Notification sent successfully"}
-        except Exception as e:
-            print(f"Error sending notification: {e}")
-            raise e
-    
+            if response.status_code != 200:
+              
+               sent_list.append(token)
+         
+        if len(sent_list)>1:   
+            return {"success": True, "message": f"Notifications sent successfully to {', '.join(map(str, sent_list))}"}
+
+        else:
+             return {"success": True, "message": "Notifications send Failed No User Available "}
+
+     except Exception as e:
+        print(f"Error sending notification: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error") 
+ 
     def send_push_notifications(self, tokens: List[str], title: str, body: str, data: dict = None):
         # Initialize Firebase App only if not already initialized
         if not firebase_admin._apps:

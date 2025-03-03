@@ -3,8 +3,9 @@ from sqlalchemy.dialects import postgresql as pg
 from datetime import datetime
 import uuid
 
-class Driver(SQLModel,table=True):
+class Driver(SQLModel, table=True):
     __tablename__ = "drivers"
+    
     uid: uuid.UUID = Field(
         sa_column=Column(
             pg.UUID,
@@ -49,4 +50,11 @@ class Driver(SQLModel,table=True):
             nullable=True
         )
     )
-    
+    valid_users: list[uuid.UUID] = Field(
+        sa_column=Column(
+            pg.ARRAY(pg.UUID),
+            nullable=True,
+            default=[]
+        )
+    )
+
