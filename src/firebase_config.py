@@ -52,19 +52,21 @@ class FirebaseConfig():
          
             message = {
                 "message": {
-                    "token": token,  # Assuming token_list contains FCM tokens
+                    "token": 'cssBaxAYSjK5aNMvj_SgV7:APA91bGwFnF-YZ616Oqo0JeKP6-P5A_Ek5-bWJwJZOTaIl2KZJta4gRLyamu2uR7Lzm22tPhg94Q92ab4anhs8WQ6LPQ7nZAuej4Cvsq-_krK24UB4S-VUo',  # Assuming token_list contains FCM tokens
                     "notification": {
                         "title": title,
-                        "body": body
+                      
                     },
-                    "data": data or {}  # Attach extra data if provided
+                    # "data": data or {}  # Attach extra data if provided
                 }
             }
             
             async with httpx.AsyncClient() as client:
                 response = await client.post(url, headers=headers, json=message)
-                print(response)
-
+                print("Status Code:", response.status_code)
+                print("Response JSON:", response.json())  # If response is JSON
+                print("Response Text:", response.text)
+            
             if response.status_code != 200:
               
                sent_list.append(token)
