@@ -61,13 +61,19 @@ class AlertService :
                 formatted_date = alert_found.raised_at.strftime("%Y-%m-%d %H:%M")
                 title: str = f"{alert_found.driver_name} Failing since {formatted_date}"
                 body: str = f"Transaction Count has reached {alert_found.transaction_count}"
+                data = {
+                   "name":driver_found.name,
+                   "reason":alert_found.reason_of_abend,
+                   "transaction_count":alert_found.transaction_count
+
+                }
                 if alert_found.attending_person is not None and alert_found.attending_person != "":
                     body += f"\nAttending Person: {alert_found.attendee.first_name}"
                 
                 # FB_Conf.send_push_notifications(tokens,title,body)
 
             
-                notification_status = await FB_Conf.send_notification_to_users(title=title,body=body,token_list=token_list)
+                notification_status = await FB_Conf.send_notification_to_users(title=title,body=body,token_list=token_list,data=data)
                 print(f"Notification status ::: {notification_status}")
                 
                 updated_driver = DriverUpdate(
