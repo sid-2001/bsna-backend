@@ -52,7 +52,7 @@ class FirebaseConfig():
          
             message = {
                 "message": {
-                    "token": 'cssBaxAYSjK5aNMvj_SgV7:APA91bGwFnF-YZ616Oqo0JeKP6-P5A_Ek5-bWJwJZOTaIl2KZJta4gRLyamu2uR7Lzm22tPhg94Q92ab4anhs8WQ6LPQ7nZAuej4Cvsq-_krK24UB4S-VUo',  # Assuming token_list contains FCM tokens
+                    "token": token,  # Assuming token_list contains FCM tokens
                     "notification": {
                         "title": title,
                       
