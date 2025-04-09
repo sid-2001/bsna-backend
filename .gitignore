@@ -9,6 +9,7 @@ dist/
 myenv/
 # Compiled Java class files
 *.class
+./service-account-key.json
 
 # Compiled Python bytecode
 *.py[cod]
