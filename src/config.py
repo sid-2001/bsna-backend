@@ -11,6 +11,9 @@ class Settings(BaseSettings):
     FIREBASE_FCM_URL: str
     BOLSBSNA_URL:str
     O_AUTH_URL:str
+    X_IBM_Client_Id:str
+    X_IBM_Client_Secret:str
+    X_Client_Certificate:str
     
     model_config = SettingsConfigDict(
         env_file=".env",

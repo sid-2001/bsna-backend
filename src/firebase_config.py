@@ -29,10 +29,13 @@ class FirebaseConfig():
     async def send_notification_to_users(self, title: str, body: str, token_list: list = None, data: dict = None):
      try:
         # Send message to all connected clients
+
+        
         for client in managerObj.connected_clients:
             await managerObj.send_message(client, title)
         print(token_list)
         sent_list=[]
+
 
         access_token = self.get_access_token()
       
@@ -67,11 +70,11 @@ class FirebaseConfig():
                 print("Response JSON:", response.json())  # If response is JSON
                 print("Response Text:", response.text)
             
-            if response.status_code != 200:
+            if response.status_code == 200:
               
                sent_list.append(token)
          
-        if len(sent_list)>1:   
+        if len(sent_list)>0:   
             return {"success": True, "message": f"Notifications sent successfully to {', '.join(map(str, sent_list))}"}
 
         else:

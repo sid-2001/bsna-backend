@@ -10,7 +10,7 @@ import datetime
 import httpx
 from sqlalchemy.sql import text
 from src.config import Config
-
+import requests
 class DriverService:
     
     # async def get_all_drivers(self,session:AsyncSession) -> List[DriverBase] | None:
@@ -157,17 +157,52 @@ class DriverService:
             return driver_found
         return None
     
+    @staticmethod
+    def get_forex_token():
+        url = "https://api-gatewaynp.standardbank.co.za/npextorg/extnonprod/sysauth/oauth2/token"
+        
+        headers = {
+            "X-IBM-Client-Id": Config.X_IBM_Client_Id,
+            "X-IBM-Client-Secret": Config.X_IBM_Client_Secret,
+            "Content-Type": "application/x-www-form-urlencoded"
+        }
+        
+        data = {
+            "grant_type": "client_credentials",
+            "scope": "forex"
+        }
+        
+        print("I am here")
+        try:
+            response = requests.post(url, headers=headers, data=data)
+            if response.status_code == 200:
+                return response.json().get("access_token")
+            else:
+                print(f"Error: {response.status_code} - {response.text}")
+                return "sample_token"
+        except requests.exceptions.RequestException as e:
+            print(f"Request failed: {e}")
+            return "AAIgYjQ3MjVlYTYyNjFkOTMyODE5Yzc0ZWU1MjhmNjg3Yze4SrTzht9HXBYdjhD4fPwld6CIzPvAd2GwlXAtZ2R4kjEnJnEV27rm1z96Z4CAlCapq5_f7SOcykCcKiIlPjKXA1prU78hEUOotijuLcs6V9vuwJYxAlKspIlj96L7eAYxWS83xx2l3nQqzlh673mkyyzYUZUMGk3088zyfEG03fzkePew8UIwWNWcwI41vX4puGMWwIj8FuT9ICMB-dX0"
+
+
     async def get_drivers_from_mf(self) -> List|None :
         try:
+
+            self.get_forex_token()
             headers = {
-                "Authorization":f"Bearer AAIgNDdiNDI3NDE1MGE0NDU4ZGM2ZjkyYWU2ZTc0NGU5YzZzEeRP5ZXQJXJ3NCiOQvWy8dZqhslGWho3gTlLOshfLyU71J77_dk1axr08pvIWyu0k1s9nCfMDp4PThJ6HRUhhAPM6pv42F5yoT0tnQeQNXKzD-f5cvLDX-yS4BEGPvqrrbQV8xU86WN2Oo4dgvcT",
-                "X-Client-Certificate":"MIIEFzCCAv+gAwIBAgIUGCBGxxtA5bFka+JCHbvMqjLw7GkwDQYJKoZIhvcNAQELBQAwgbMxCzAJBgNVBAYTAklOMRAwDgYDVQQIDAdIYXJ5YW5hMREwDwYDVQQHDAhHdXJ1Z3JhbTErMCkGA1UECgwiSW1wcm9uaWNzIERpZ2l0ZWNoIFByaXZhdGUgTGltaXRlZDEQMA4GA1UECwwHRGlnaXRhbDEaMBgGA1UEAwwRd3d3LmltcHJvbmljcy5jb20xJDAiBgkqhkiG9w0BCQEWFWNvbnRhY3RAaW1wcm9uaWNzLmNvbTAeFw0yNDExMTgwOTAxMjNaFw0yNTExMTgwOTAxMjNaMIGzMQswCQYDVQQGEwJJTjEQMA4GA1UECAwHSGFyeWFuYTERMA8GA1UEBwwIR3VydWdyYW0xKzApBgNVBAoMIkltcHJvbmljcyBEaWdpdGVjaCBQcml2YXRlIExpbWl0ZWQxEDAOBgNVBAsMB0RpZ2l0YWwxGjAYBgNVBAMMEXd3dy5pbXByb25pY3MuY29tMSQwIgYJKoZIhvcNAQkBFhVjb250YWN0QGltcHJvbmljcy5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCi6t0Wj/rZhF2vb6AWM3ikFrFssKwYcqHVlkwAtu+YPTr0iuA0G8hdITOTf48TwpESXoawLe8ExhTFE8ya64XZBDyuriqtgjCkc0Xd4Arq7ebGso2N9Gdv+QCiogcdT2AYkmRpPVCGmcr0lhrrx7Shg3Vlm/TvrHDkyrHIon4zrUa/toycoYgEE7NwkSlykWjaAIJShxX9bPH7K+8R66KqL2MtSQakHVLoGOzfwaC+C1iNy0kTIbJGO+bhHAq0yJLFJpz37iYK65X1KitcmH8nfjCckQAMoq5F95NlPiLrKBKc6eXBnxoE4L+T5VeRPwOcRf0wRqy49X0VcCUKhf+vAgMBAAGjITAfMB0GA1UdDgQWBBSjIhc0bTkUz5n8MnBSFybz+tmC7zANBgkqhkiG9w0BAQsFAAOCAQEACdTJrQm1eMVXFY4RUOBY0/QDFo+HIIdomRgOwqxWw0SHOGAAXN8jJXVXmzqcyRdJtVDgnUEFei3SS/mKh7g82CESbhbj7e8qSr0BTyPhO5BlEIu72lyQk7DCO5DNlcWzlNKbd07uEaR3dm5LtHxS1ixLaF16LZY7xAGB1HIVU/esqW2p7GgsosGrgGGQ6lOi/b0t0xKWds1PEBwoItcRoKhwYkPGHws8RU8xYcAG74LhFEWA1MBO7e0Hdf90oY8noFt1ZQzoG8+yuYU2q/d5Jj1oKOBlLjR1XgQV/3GgXqYP7NRr8iRXKgMdA6M6ov4X09kndy6Ql6nnJrrRbyI9nQ==",
-                "X-IBM-Client-Id":"47b4274150a4458dc6f92ae6e744e9c6",
-                "X-IBM-Client-Secret":"1cb7583c6630a16ea267390f1794e37b"
+               "Authorization": f"Bearer {self.get_forex_token()}",
+
+                "X-Client-Certificate":Config.X_Client_Certificate,
+                "X-IBM-Client-Id":Config.X_IBM_Client_Id,
+                "X-IBM-Client-Secret":Config.X_IBM_Client_Secret
             }
+
+            
             url = Config.BOLSBSNA_URL
+           
             async with httpx.AsyncClient() as client:
                 response = await client.get(url=url, headers=headers)
+                print(response.status_code)
                 if response.status_code == 200:
                     data = response.json()
                     return data["drivers"]

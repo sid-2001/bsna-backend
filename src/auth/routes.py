@@ -51,7 +51,11 @@ async def send_periodic_messages():
 
 @auth_router.websocket("/ws/notifications")
 
+
+
 async def websocket_endpoint(websocket: WebSocket):
+
+    print("in the notifcaiton")
     await managerObj.connect(websocket)
     
 

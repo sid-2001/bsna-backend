@@ -1,4 +1,4 @@
-#!/Users/siddhant_kaushik/Documents/impronics/bsna_server_new/venv/bin/python3
+#!/Users/siddhant_kaushik/Documents/impronics/bsna_server_new/venv/bin/python3.13
 # -*- coding: utf-8 -*-
 # Copyright 2024 Google LLC
 #
