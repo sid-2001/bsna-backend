@@ -54,7 +54,7 @@ async def send_periodic_messages():
 
 
 async def websocket_endpoint(websocket: WebSocket):
-
+    print("all notifcation is here")
     print("in the notifcaiton")
     await managerObj.connect(websocket)
     

@@ -3,13 +3,14 @@ from sqlmodel import SQLModel
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlalchemy.orm import sessionmaker
+from src.config import Config
 
 # Suppress SQLAlchemy logs
 logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
 logging.getLogger("sqlalchemy.pool").setLevel(logging.WARNING)
 
 # Async database URL (with asyncpg)
-DATABASE_URL = 'postgresql+asyncpg://doadmin:AVNS_xzyC5HsXTawenfBh8Y4@db-postgresql-blr1-15255-do-user-19732516-0.m.db.ondigitalocean.com:25060/bsna_dev'
+DATABASE_URL = Config.DB_URL
 
 # Create async engine
 engine: AsyncEngine = create_async_engine(DATABASE_URL, echo=False)
