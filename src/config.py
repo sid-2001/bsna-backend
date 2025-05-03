@@ -5,7 +5,7 @@ class Settings(BaseSettings):
     JWT_SECRET_KEY: str
     JWT_ALGO: str
     HOST: str
-    PORT: str
+    PORT: int
     SERVICE_KEY_FILE: str
     GOOGLE_SERVICES_FILE: str
     FIREBASE_FCM_URL: str
