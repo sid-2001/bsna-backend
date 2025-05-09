@@ -159,8 +159,8 @@ class DriverService:
     
     @staticmethod
     def get_forex_token():
-        url = "https://api-gatewaynp.standardbank.co.za/npextorg/extnonprod/sysauth/oauth2/token"
-        
+        url = Config.O_AUTH_URL
+
         headers = {
             "X-IBM-Client-Id": Config.X_IBM_Client_Id,
             "X-IBM-Client-Secret": Config.X_IBM_Client_Secret,
@@ -172,7 +172,7 @@ class DriverService:
             "scope": "forex"
         }
         
-        print("I am here")
+   
         try:
             response = requests.post(url, headers=headers, data=data)
             if response.status_code == 200:
@@ -196,7 +196,6 @@ class DriverService:
                 "X-IBM-Client-Id":Config.X_IBM_Client_Id,
                 "X-IBM-Client-Secret":Config.X_IBM_Client_Secret
             }
-
             
             url = Config.BOLSBSNA_URL
            
@@ -227,6 +226,9 @@ class DriverService:
                     new_driver = DriverCreate(
                         name=driver_to_update["driverName"],
                         description=driver_to_update["driverDescription"],
+                        valid_users=driver_to_update["valid_users"],
+                    
+                        
                         is_Active=True,
                         transaction_count=driver_to_update["driverCount"]
                     )
