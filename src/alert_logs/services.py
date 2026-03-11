@@ -5,7 +5,7 @@ import uuid
 from fastapi.responses import JSONResponse
 import datetime
 from fastapi import HTTPException,status
-
+from datetime import datetime, timezone
 from .schemas import AlertLogsBase,AlertLogsCreate,AlertLogsUpdate
 from .models import AlertLogs
 from src.drivers.service import DriverService
@@ -81,14 +81,14 @@ class AlertService :
                 description="",
                 is_Active=True,
                 transaction_count= driver_data["driverCount"],
-                updated_at=datetime.datetime.now()
+                updated_at=datetime.now(timezone.utc)
                 )
                 await driver_service.update_driver_details(driver_uid=driver_found.uid,session=session,updated_driver=updated_driver)
                 return alert_found
             new_alert = AlertLogs()
             new_alert.driver_name = driver_data["driverName"]
             new_alert.transaction_count = driver_data["driverCount"]
-
+           
             
             new_alert.reason_of_abend = driver_data["abendCode"]
             session.add(new_alert)
@@ -109,7 +109,7 @@ class AlertService :
                 description="",
                 is_Active=True,
                 transaction_count=driver_data["driverCount"],
-                updated_at=datetime.datetime.now()
+                updated_at=datetime.now(timezone.utc)
             )
             await driver_service.update_driver_details(driver_uid=driver_found.uid,session=session,updated_driver=updated_driver)
             # call firebase notification method
@@ -149,7 +149,7 @@ class AlertService :
             if alert_found is not None :
                 alert_found.status = "closed"
                 alert_found.attending_person = fixed_by
-                alert_found.fixed_at = datetime.datetime.now()
+                alert_found.fixed_at = datetime.now(timezone.utc)
                 session.add(alert_found)
                 await session.commit()
                 return alert_found
