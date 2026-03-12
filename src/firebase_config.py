@@ -59,7 +59,7 @@ class FirebaseConfig():
                     "notification": {
                         "title": title,
                       
-                    },
+                    }
                     # "data": data or {}  # Attach extra data if provided
                 }
             }

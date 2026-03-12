@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     X_IBM_Client_Id:str
     X_IBM_Client_Secret:str
     X_Client_Certificate:str
+    ENV:str
  
     
     model_config = SettingsConfigDict(

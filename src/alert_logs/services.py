@@ -12,6 +12,7 @@ from src.drivers.service import DriverService
 from src.users.service import UserService
 from src.drivers.schemas import DriverBase,DriverUpdate
 from src.firebase_config import FirebaseConfig
+from src.config import Config
 
 driver_service = DriverService()
 user_service = UserService()
@@ -55,11 +56,12 @@ class AlertService :
             if alert_found is not None :
                 print(f"Alert exists :: {alert_found}")
                 alert_found.transaction_count = driver_data["driverCount"]
+                alert_found.raised_at = datetime.now(timezone.utc) 
                 session.add(alert_found)
                 await session.commit()
                 # call firebase notification method
                 formatted_date = alert_found.raised_at.strftime("%Y-%m-%d %H:%M")
-                title: str = f"{alert_found.driver_name} Failing since {formatted_date}"
+                title: str = f"{alert_found.driver_name} Failing since {formatted_date} in {Config.ENV}"
                 body: str = f"Transaction Count has reached {alert_found.transaction_count}"
                 data = {
                    "name":driver_found.name,
@@ -72,7 +74,7 @@ class AlertService :
                 
                 # FB_Conf.send_push_notifications(tokens,title,body)
 
-            
+           
                 notification_status = await FB_Conf.send_notification_to_users(title=title,body=body,token_list=token_list,data=data)
                 print(f"Notification status ::: {notification_status}")
                 
@@ -88,6 +90,7 @@ class AlertService :
             new_alert = AlertLogs()
             new_alert.driver_name = driver_data["driverName"]
             new_alert.transaction_count = driver_data["driverCount"]
+            new_alert.raised_at = datetime.now(timezone.utc) 
            
             
             new_alert.reason_of_abend = driver_data["abendCode"]

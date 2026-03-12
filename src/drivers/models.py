@@ -1,11 +1,16 @@
 from sqlmodel import SQLModel, Field, Column
 from sqlalchemy.dialects import postgresql as pg
-from datetime import datetime
+from datetime import datetime, timezone
 import uuid
 
 class Driver(SQLModel, table=True):
     __tablename__ = "drivers"
     
+    
+    def utc_now():
+       return datetime.now(timezone.utc)
+
+
     uid: uuid.UUID = Field(
         sa_column=Column(
             pg.UUID,
@@ -38,12 +43,14 @@ class Driver(SQLModel, table=True):
         )
     )
     updated_at: datetime = Field(
-        sa_column=Column(
-            pg.TIMESTAMP(timezone=False),
-            nullable=False,
-            default=datetime.now()
-        )
+    default_factory=utc_now,
+    sa_column=Column(
+        pg.TIMESTAMP(timezone=True),
+        nullable=False,
+        default=utc_now,
+        onupdate=utc_now
     )
+)
     description: str = Field(
         sa_column=Column(
             pg.TEXT,

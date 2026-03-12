@@ -30,6 +30,7 @@ class DriverService:
     from sqlalchemy.future import select
     from typing import List, Optional
 
+   
     async def get_all_drivers(self, session: AsyncSession) -> Optional[List[DriverBase]]:
         statement = select(Driver).where(Driver.is_Active == True).order_by(desc(Driver.name))
         result = await session.execute(statement)
@@ -217,19 +218,34 @@ class DriverService:
         try:
             drivers_to_update = await self.get_drivers_from_mf()
             additional_drivers = {}
+            valid_user_ids = [
+                uuid.UUID("48cec446-890e-40b6-befa-2311e8ccddc9"),
+                uuid.UUID("9cfedb1c-5f7e-4d0f-b70c-94a8c51b7986"),
+                uuid.UUID("5ee83a88-4c5b-40ff-92e2-5c2407ea70a4"),
+                uuid.UUID("65ea2c7e-9c21-4e69-9092-b573268a4afa"),
+                uuid.UUID("7df280f0-deec-4bae-a373-ee2a686adc9a"),
+                uuid.UUID("eb3732aa-8754-48c7-aa97-286f2dae306e"),
+                uuid.UUID("a0fedf41-e9e8-44ba-bdc3-2734ed3273ab"),
+                uuid.UUID("69cad093-c698-43a9-9dc2-04c55e5a4d60"),
+                uuid.UUID("da64f508-4991-4bf7-a077-bc7001182141"),
+                uuid.UUID("0177b7b5-975c-4592-9e42-6dd515db0f36"),
+                uuid.UUID("fd225e39-69e4-435b-81b3-a661428621c9"),
+                uuid.UUID("e6c76153-b469-436a-9101-ea4992101c04"),
+                uuid.UUID("f4264025-f47b-4959-bfe3-109c30e7e4a0"),
+                 ]
             for driver_to_update in drivers_to_update:
                 driver_found = await self.get_driver_by_name(session=session, driver_name=driver_to_update["driverName"], driver_desc=driver_to_update["driverDescription"])
                 if driver_found is not None :
+                    print(driver_found.name)
                     driver_found.transaction_count = driver_to_update["driverCount"]
+                    driver_found.updated_at = datetime.now(timezone.utc)
                     session.add(driver_found)
                     await session.commit()
                 else:
                     new_driver = DriverCreate(
                         name=driver_to_update["driverName"],
                         description=driver_to_update["driverDescription"],
-                        valid_users=driver_to_update["valid_users"],
-                    
-                        
+                        valid_users=valid_user_ids,    
                         is_Active=True,
                         transaction_count=driver_to_update["driverCount"]
                     )
